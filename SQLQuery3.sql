@@ -146,8 +146,117 @@ from sales.stores as ss
 full outer join production.stocks as ps
 on ss.store_id = ps.store_id
 
-/**/
+
+/*GROUP BY*/
 select pp.category_id, 
-	   count(product_id) "product_id"
+	   count(product_id) "product_id_count"
 from production.products as pp
 group by category_id
+
+select pp.category_id, 
+	   sum(product_id) "product_id_sum"
+from production.products as pp
+group by category_id
+
+select pp.category_id, 
+	   floor(avg(product_id)) "product_id"
+from production.products as pp
+group by category_id
+
+
+select pp.category_id, 
+	   min(product_id),
+	   max(product_id)
+from production.products as pp
+group by category_id
+
+
+select pp.category_id, 
+	   count(product_id) "product_id_count"
+from production.products as pp
+group by category_id
+order by count(product_id) desc;
+
+
+
+--select sc.customer_id,
+--	   so.staff_id,
+--	   count(so.customer_id) as 'Customers',
+--	   concat(ss.first_name,', ', ss.last_name) as 'Staf Person'
+--from sales.orders so
+--inner join sales.customers sc on so.customer_id = sc.customer_id
+--inner join sales.staffs ss on ss.staff_id = so.staff_id
+--group by sc.customer_id,
+--		 so.staff_id
+--order by sc.customer_id asc;
+
+
+
+/*SQL HAVING*/
+
+select sales.orders.shipped_date,
+	   count(sales.orders.order_id) as Count
+from sales.orders
+group by shipped_date
+having sales.orders.shipped_date = (select sales.orders.shipped_date
+from sales.orders
+where sales.orders.order_id = 1)
+	   
+select sales.orders.shipped_date,
+	   count(sales.orders.order_id) as Count
+from sales.orders
+group by shipped_date
+having sales.orders.shipped_date = '2016-01-03'
+
+select sales.orders.shipped_date
+from sales.orders
+where sales.orders.shipped_date = '2016-01-03'
+	
+select sales.orders.shipped_date,
+	   count(sales.orders.order_id) as Counts
+from sales.orders
+where sales.orders.shipped_date = (select sales.orders.shipped_date
+from sales.orders
+where sales.orders.order_id = 1)
+group by shipped_date
+
+/*SQL Subquery*/
+select sales.staffs.first_name 
+from sales.staffs
+
+select distinct sales.staffs.first_name 
+from sales.staffs 
+
+select ss.staff_id, ss.first_name, ss.last_name
+from sales.staffs ss
+where ss.staff_id in(5,3,11)
+
+select sc.customer_id, sc.city, sc.email
+from sales.customers sc
+where sc.customer_id <> 54
+	  and city = 
+	  (
+	   select city
+	   from sales.customers
+	   where customer_id = 54
+	  )
+
+
+select sc.customer_id, sc.city, sc.email
+from sales.customers sc
+where sc.customer_id not in 
+	  (
+	   select customer_id
+	   from sales.customers
+	   where sales.customers.city = 'Buffalo'
+	  )
+
+--select pp.product_id,
+--	   pp.product_name,
+--	   (select avg(pp.list_price)
+--	    from production.products)
+--		as 'average price',
+--		(select avg(pp.list_price)
+--		from production.products) as diff
+--from production.products as pp
+--where category_id = 1
