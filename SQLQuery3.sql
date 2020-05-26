@@ -3,6 +3,17 @@ select CONCAT (sales.customers.last_name,', ', sales.customers.first_name)
 as fullname
 from sales.customers
 
+select count(distinct city)
+from sales.stores
+
+select distinct 
+city,
+store_id
+from sales.stores
+
+select all store_id
+from sales.stores
+
 /*SQL Alias*/
 select production.products.product_name "Product Name",
 	   production.brands.brand_name "Brand Name"
@@ -284,11 +295,11 @@ where 34503.82 <= (select sum(list_price * quantity)
 				inner join sales.orders so on so.order_id = soi.order_id
 				where so.customer_id = sc.customer_id)
 
-select pp.category_id,
+select pp.category_id
 	   category_name
 from production.products pp
 inner join production.categories pc on pc.category_id = pp.category_id
-group by category_id
+group by pp.category_id
 having max(list_price)> all(select 2 * avg(list_price)
 							 from production.products pp2
 							 where pp.category_id = pp2.category_id)
