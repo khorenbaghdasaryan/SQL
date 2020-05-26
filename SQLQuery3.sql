@@ -151,7 +151,7 @@ on ss.store_id = ps.store_id
 select pp.category_id, 
 	   count(product_id) "product_id_count"
 from production.products as pp
-group by category_id
+group by category_id 
 
 select pp.category_id, 
 	   sum(product_id) "product_id_sum"
@@ -235,28 +235,60 @@ select sc.customer_id, sc.city, sc.email
 from sales.customers sc
 where sc.customer_id <> 54
 	  and city = 
-	  (
-	   select city
+	  (select city
 	   from sales.customers
-	   where customer_id = 54
-	  )
+	   where customer_id = 54)
 
 
 select sc.customer_id, sc.city, sc.email
 from sales.customers sc
 where sc.customer_id not in 
-	  (
-	   select customer_id
+	  (select customer_id
 	   from sales.customers
-	   where sales.customers.city = 'Buffalo'
-	  )
+	   where sales.customers.city = 'Buffalo')
 
---select pp.product_id,
---	   pp.product_name,
---	   (select avg(pp.list_price)
---	    from production.products)
---		as 'average price',
---		(select avg(pp.list_price)
---		from production.products) as diff
---from production.products as pp
---where category_id = 1
+
+select product_id,
+	   product_name,
+	   list_price,
+	   (select avg(list_price)
+	    from production.products) as 'average price'
+		--(list_price - (select avg(list_price)
+		--			   from production.products)) as diff
+from production.products pp
+where category_id = 1
+order by pp.list_price desc
+
+select pp.product_id,
+	   pp.product_name,
+	   pp.list_price
+from production.products pp
+order by pp.list_price desc
+
+/*Correlated Subquery*/
+select top 5
+	   city,
+	   email,
+	   (select sum(list_price * quantity)
+	    from sales.order_items soi
+		inner join sales.orders so on so.order_id = soi.order_id
+		where so.customer_id = sc.customer_id) as total
+from sales.customers sc
+order by total desc
+
+select city,
+	   email
+from sales.customers sc
+where 34503.82 <= (select sum(list_price * quantity)
+				from sales.order_items soi
+				inner join sales.orders so on so.order_id = soi.order_id
+				where so.customer_id = sc.customer_id)
+
+select pp.category_id,
+	   category_name
+from production.products pp
+inner join production.categories pc on pc.category_id = pp.category_id
+group by category_id
+having max(list_price)> all(select 2 * avg(list_price)
+							 from production.products pp2
+							 where pp.category_id = pp2.category_id)
