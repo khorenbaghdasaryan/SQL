@@ -1,6 +1,7 @@
 /*select*/
-select CONCAT (sales.customers.last_name,', ', sales.customers.first_name) 
-as fullname
+select CONCAT (sales.customers.last_name,', ', sales.customers.first_name) as fullname,
+	   customer_id,
+	   city
 from sales.customers
 
 select count(distinct city)
@@ -40,20 +41,21 @@ where not
 (ss.city <> 'Paris'
 or ss.zip_code >20000)
 
-/*ORDER BY*/
+/*ORDER BY -Sorting a Result Set By Using SQL ORDER BY Clause */
 select sales.customers.first_name,
 	sales.customers.last_name
 from sales.customers
 order by last_name asc,
 first_name desc
 
-select CONCAT(sales.customers.last_name,', ', sales.customers.first_name) fullname
+select CONCAT(sales.customers.last_name,', ', sales.customers.first_name) fullname,
+	   customer_id
 from sales.customers
 order by CONCAT(sales.customers.last_name,', ', sales.customers.first_name)
 
-select sales.customers.last_name, sales.customers.first_name
+select last_name, first_name
 from sales.customers
-order by 2 desc;
+order by 1 asc;
 
 /*BETWEEN */
 select sc.last_name, sc.first_name, sc.zip_code
@@ -83,29 +85,27 @@ from sales.customers as sc
 where sc.zip_code is not null
 
 /*EXISTS*/
-select 
+select so.order_id,
 	   so.order_status,
 	   so.order_date,
 	   so.shipped_date
 from sales.orders as so
-where exists(
-select sc.customer_id
+where exists
+(select sc.customer_id
 from sales.customers as sc
 where so.customer_id =sc.customer_id)
 
-select 
-	   so.order_status,
+select so.order_status,
 	   so.order_date,
 	   so.shipped_date
 from sales.orders as so
-where exists(
-select null)
+where exists(select null)
 
 /*LIKE*/
 select sales.customers.first_name,
 	   sales.customers.last_name
 from sales.customers
-where last_name not Like '_D%'
+where last_name Like '_D%'
 
 select sales.customers.first_name,
 	   sales.customers.last_name
@@ -134,7 +134,6 @@ on p.brand_id = b.brand_id
 inner join production.categories as c
 on p.category_id = c.category_id
 
-
 /*LEFT/RIGTH OUTER JOIN*/
 select ss.state, 
 	ss.city,
@@ -160,7 +159,7 @@ on ss.store_id = ps.store_id
 
 /*GROUP BY*/
 select pp.category_id, 
-	   count(product_id) "product_id_count"
+	   count(product_id) 'product_id_count'
 from production.products as pp
 group by category_id 
 
@@ -174,6 +173,10 @@ select pp.category_id,
 from production.products as pp
 group by category_id
 
+select pp.category_id, 
+	   avg(product_id) "product_id"
+from production.products as pp
+group by category_id
 
 select pp.category_id, 
 	   min(product_id),
@@ -181,47 +184,58 @@ select pp.category_id,
 from production.products as pp
 group by category_id
 
-
 select pp.category_id, 
 	   count(product_id) "product_id_count"
 from production.products as pp
 group by category_id
 order by count(product_id) desc;
 
-
-
---select sc.customer_id,
---	   so.staff_id,
---	   count(so.customer_id) as 'Customers',
---	   concat(ss.first_name,', ', ss.last_name) as 'Staf Person'
---from sales.orders so
---inner join sales.customers sc on so.customer_id = sc.customer_id
---inner join sales.staffs ss on ss.staff_id = so.staff_id
---group by sc.customer_id,
---		 so.staff_id
---order by sc.customer_id asc;
-
-
+select sc.customer_id,
+	   sc.email,
+	   count(so.order_id) 'Order_id_count',
+	   concat(ss.first_name,', ',ss.last_name) as Staff
+from sales.orders as so
+inner join sales.customers sc on so.customer_id = sc.customer_id
+inner join sales.staffs ss on ss.staff_id = so.staff_id
+group by sc.customer_id,
+		 sc.email,
+		 ss.first_name,
+		 ss.last_name
+order by sc.customer_id asc,
+		 'Order_id_count' desc
 
 /*SQL HAVING*/
+select shipped_date,
+	   sales.orders.order_id,
+	   count(sales.orders.order_id) as Counts
+from sales.orders
+group by shipped_date,
+		 order_id
+having sales.orders.shipped_date = (select sales.orders.shipped_date
+from sales.orders
+where sales.orders.order_id = 1)
 
-select sales.orders.shipped_date,
-	   count(sales.orders.order_id) as Count
+----------------------------
+select shipped_date,
+	   count(sales.orders.order_id) as Counts
 from sales.orders
 group by shipped_date
 having sales.orders.shipped_date = (select sales.orders.shipped_date
 from sales.orders
 where sales.orders.order_id = 1)
-	   
+
+-----------------------------------
 select sales.orders.shipped_date,
 	   count(sales.orders.order_id) as Count
 from sales.orders
 group by shipped_date
 having sales.orders.shipped_date = '2016-01-03'
 
-select sales.orders.shipped_date
+select sales.orders.shipped_date,
+	   count(sales.orders.order_id) as Count
 from sales.orders
 where sales.orders.shipped_date = '2016-01-03'
+group by shipped_date
 	
 select sales.orders.shipped_date,
 	   count(sales.orders.order_id) as Counts
@@ -230,6 +244,16 @@ where sales.orders.shipped_date = (select sales.orders.shipped_date
 from sales.orders
 where sales.orders.order_id = 1)
 group by shipped_date
+
+--select category_id,
+
+--	   max(list_price)
+--from production.products
+--where list_price = (select max(list_price)
+--					 from production.products pp2
+--					 where pp2.category_id = production.products.category_id
+--					 group by list_price)
+--group by production.products.category_id
 
 /*SQL Subquery*/
 select sales.staffs.first_name 
