@@ -90,12 +90,13 @@ select so.order_id,
 	   so.order_date,
 	   so.shipped_date
 from sales.orders as so
-where exists
+where not exists
 (select sc.customer_id
 from sales.customers as sc
-where so.customer_id =sc.customer_id)
+where so.customer_id = sc.customer_id)
 
-select so.order_status,
+select so.order_id,
+	   so.order_status,
 	   so.order_date,
 	   so.shipped_date
 from sales.orders as so
@@ -159,7 +160,7 @@ on ss.store_id = ps.store_id
 /*SQL UNION*/
 select city
 from sales.stores
-union --all
+union  --all 
 select sc.city   
 from sales.customers sc
 order by city asc
