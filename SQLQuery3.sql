@@ -156,6 +156,26 @@ from sales.stores as ss
 full outer join production.stocks as ps
 on ss.store_id = ps.store_id
 
+/*SQL UNION*/
+select city
+from sales.stores
+union --all
+select sc.city   
+from sales.customers sc
+order by city asc
+
+select distinct city
+from sales.stores
+
+select distinct ss.city
+from sales.stores ss
+left join sales.customers sc on sc.city = ss.city
+where ss.city is null
+
+select distinct ss.city
+from sales.stores ss
+inner join sales.customers sc on sc.city = ss.city
+where ss.city is null
 
 /*GROUP BY*/
 select pp.category_id, 
@@ -245,15 +265,20 @@ from sales.orders
 where sales.orders.order_id = 1)
 group by shipped_date
 
---select category_id,
-
---	   max(list_price)
---from production.products
---where list_price = (select max(list_price)
---					 from production.products pp2
---					 where pp2.category_id = production.products.category_id
---					 group by list_price)
---group by production.products.category_id
+select pp.category_id,
+	   pp.product_id,
+	   pp.product_name,
+	   max(pp.list_price)
+from production.products pp
+where pp.list_price = (select top 1 max(pp2.list_price)
+					 from production.products pp2
+					 where pp2.category_id = pp.category_id
+					 group by pp2.list_price)
+group by pp.category_id,
+		 pp.product_id,
+		 pp.product_name,
+		 pp.list_price
+having max(list_price) = 379.99
 
 /*SQL Subquery*/
 select sales.staffs.first_name 
